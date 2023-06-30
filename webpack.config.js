@@ -1,57 +1,65 @@
 const path = require('path');
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { merge } = require('webpack-merge');
 
-module.exports = {
-  mode: 'development',
-  entry: './src/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name][contenthash].js',
-    assetModuleFilename: '[name][ext]',
-    clean: true
-  },
-  performance: {
-    hints: false,
-    maxAssetSize: 512000,
-    maxEntrypointSize: 512000
-  },
-  devServer: {// npx webpack serve запустить сервер
-    port: 9000,
-    compress: true,// сжимать файлы перед отображением
-    hot: true,// если будем менять чтото внутри папки дист перегрузить сервер
-    static: { // какие статические файлы показывать на станице сервера
-      directory: path.join(__dirname, 'dist')
-    }
-  },
-  module: {
-    rules: [
-      {
-        // Это правило будет применяться ко всем файлам,
-        // имя которых подойдет под регулярное выражение:
-        test: /\.css$/,
-        // Список лоадеров, которые применятся к файлу:
-        use: [
-          { loader: 'style-loader' },
-          {
-            loader: 'css-loader',
-            // Лоадеру можно передать параметры:
-            options: { modules: true }
-          }
-        ]
-      },
-      // для обработки статических ресурсов достаточно указать type: 'asset'
-      {
-        test: /\.(jpe?g|png|gif|svg|eot|ttf|woff?2)$/i,
-        type: 'asset'
-      }
-    ]
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Minesweeper',
-      filename: 'index.html',
-      template: './src/index.html'// будет брать шаблонный index.html и в него подключать все скрипты и положет его в папку dist
-    })
-  ]
+const baseConfig = {
+    entry: {
+        slider: './src/pages/slider/app-slider.js',
+        pagination: './src/pages/pagination/app-pagination.js',
+    },
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+    },
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: 'src/pages/slider/slider.html',
+            filename: 'slider.html',
+            chunks: ['common', 'slider'],
+        }),
+        new HtmlWebpackPlugin({
+            template: 'src/pages/pagination/pagination.html',
+            filename: 'pagination.html',
+            chunks: ['common', 'pagination'],
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: path.resolve(__dirname, 'src', 'assets'),
+                    to: path.resolve(__dirname, 'dist', 'assets'),
+                },
+            ],
+        }),
+        new CleanWebpackPlugin(),
+    ],
+    optimization: {
+        splitChunks: {
+            name: 'common',
+            chunks: 'all',
+        },
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/i,
+                use: ['style-loader', 'css-loader'],
+            },
+            {
+                test: /\.html$/i,
+                use: 'html-loader',
+            },
+        ],
+    },
+    resolve: {
+        extensions: ['.js'],
+    },
+};
 
+module.exports = ({}, { mode }) => {
+    const isProductionMode = mode === 'production';
+    const envConfig = isProductionMode ? require('./webpack.prod.config') : require('./webpack.dev.config');
+
+    return merge(baseConfig, envConfig);
 };
