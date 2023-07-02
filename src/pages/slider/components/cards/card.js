@@ -17,7 +17,7 @@ function createElement (tagName, className) {
   return element;
 }
 
-function createComponent(pet) {
+function createCardComponent(pet) {
   validatePet(pet);
 
   const component = createElement ('li', CssClacces.CARD);
@@ -41,4 +41,4 @@ function createComponent(pet) {
   return component;
 }
 
-export { createComponent };
+export { createCardComponent };

@@ -1,6 +1,10 @@
 import './slider.css';
 import * as Card from '../cards/card'
 
+/**
+ * @param {deltaOrder} отвечает за направление перелистывания, перелистывание влево -1, вправо +1
+ *
+ */
 const CssClasses = {
   SLIDER: 'slider',
   BUTTON: 'round__button',
@@ -35,7 +39,7 @@ function createComponent(petsData) {
 
   const component = createElement('section', CssClasses.SLIDER);
 
-  const buttonLeft = createElement('button', CssClasses.BUTTON);
+  buttonLeft = createElement('button', CssClasses.BUTTON);
   buttonLeft.textContent = TEXT_BUTTON_LEFT;
   component.append(buttonLeft);
 
@@ -45,12 +49,12 @@ function createComponent(petsData) {
   wrapper.append(cardContainer);
 
   petsData.forEach((pet) => {
-    const cardComponent = Card.createComponent(pet);
+    const cardComponent = Card.createCardComponent(pet);
     cards.push(cardComponent);
   });
 
   for (let i = 0; i < COUNT_CARD_BLOCK; i++) {
-    const cardGroup = createElement ('ul', CssClasses.CARD_GROUP);
+    const cardGroup = createElement ('ul', CssClasses.CARD_GROUP);// блок из 3х карточек
     cardGroup.style.order = `${i + 1}`;
     cardContainer.append(cardGroup);
   };
@@ -62,7 +66,7 @@ function createComponent(petsData) {
 
   component.append(wrapper);
 
-  const buttonRight = createElement('button', CssClasses.BUTTON);
+  buttonRight = createElement('button', CssClasses.BUTTON);
   buttonRight.textContent = TEXT_BUTTON_RIGHT;
   component.append(buttonRight);
 
