@@ -83,7 +83,7 @@ function createElement (tagName, className) {
   return element;
 };
 
-function buttonRightClickHandler () {
+function buttonLeftClickHandler () {
 
   let leftCardGroup = null;
   for (let group of cardContainer.children) {
@@ -108,7 +108,7 @@ function buttonRightClickHandler () {
   disableButtons();
 };
 
-function buttonLeftClickHandler () {
+function buttonRightClickHandler () {
 
   let rightCardGroup = null;
 
