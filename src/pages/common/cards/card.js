@@ -41,4 +41,4 @@ function createCardComponent(pet) {
   return component;
 }
 
-export { createCardComponent };
+export { createCardComponent, createElement };

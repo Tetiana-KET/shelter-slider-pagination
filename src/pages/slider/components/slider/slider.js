@@ -1,5 +1,5 @@
 import './slider.css';
-import * as Card from '../cards/card'
+import * as Card from '../../../common/cards/card'
 
 /**
  * @param {deltaOrder} отвечает за направление перелистывания, перелистывание влево -1, вправо +1
@@ -23,14 +23,13 @@ const COUNT_CARD_BLOCK = 3;
 const INDEX_VISIBLE_GROUP = 2;
 
 let cards = [];
-let visibleCards = [];
+let currentVisibleCards = [];
+let leftCards = [];
+let rightCards = [];
+let deltaOrder = 0;
 let cardContainer = null;
 let buttonLeft = null;
 let buttonRight = null;
-let deltaOrder = 0;
-let isRightClick = false;
-let isLeftClick = false;
-
 
 function createComponent(petsData) {
   if (!Array.isArray(petsData)) {
@@ -53,15 +52,15 @@ function createComponent(petsData) {
     cards.push(cardComponent);
   });
 
-  for (let i = 0; i < COUNT_CARD_BLOCK; i++) {
+  for (let i = 1; i <= COUNT_CARD_BLOCK; i++) {
     const cardGroup = createElement ('ul', CssClasses.CARD_GROUP);// блок из 3х карточек
-    cardGroup.style.order = `${i + 1}`;
+    cardGroup.style.order = i;
     cardContainer.append(cardGroup);
   };
 
   for (let i = 0; i < COUNT_CARD; i++) {
     cardContainer.children[1].append(cards[i]);
-    visibleCards.push(cards[i]);
+    currentVisibleCards.push(cards[i]);
   };
 
   component.append(wrapper);
@@ -84,48 +83,25 @@ function createElement (tagName, className) {
   return element;
 };
 
-function getCardsToShow () {
-  let cardsToShow = [];
-  while (cardsToShow.length < COUNT_CARD) {
-    const index = getRundomNumber(0, cards.length-1);
-    if (!visibleCards.includes(cards[index]) && !cardsToShow.includes(cards[index])) {
-      cardsToShow.push(cards[index]);
-    }
-  }
-  return cardsToShow;
-};
-
-function getRundomNumber (min, max) {
-  max = Math.floor(max);
-  min = Math.ceil(min);
-  return Math.floor(Math.random() * (max - min)) + min;
-};
-
 function buttonRightClickHandler () {
-  if (!isLeftClick) {
 
-    let leftCardGroup = null;
-    for (let group of cardContainer.children) {
-      if (Number(group.style.order) === INDEX_VISIBLE_GROUP - 1) {
-        leftCardGroup = group;
-        break;
-      }
+  let leftCardGroup = null;
+  for (let group of cardContainer.children) {
+    if (Number(group.style.order) === INDEX_VISIBLE_GROUP - 1) {
+      leftCardGroup = group;
+      break;
     }
-
-    while (leftCardGroup.firstElementChild) {
-      leftCardGroup.firstElementChild.remove();
-    }
-
-    const cardsToShow = getCardsToShow();
-    visibleCards = [...cardsToShow];
-
-    cardsToShow.forEach((card) => {
-      leftCardGroup.insertAdjacentElement('beforeend', card);
-    })
   }
 
-  isRightClick = true;
-  isLeftClick = !isRightClick;
+  while (leftCardGroup.firstElementChild) {
+    leftCardGroup.firstElementChild.remove();
+  }
+
+  let cardsToShow = getLeftCards();
+
+  cardsToShow.forEach((card) => {
+    leftCardGroup.insertAdjacentElement('beforeend', card);
+  })
 
   deltaOrder = 1;
   cardContainer.classList.add(CssClasses.ANIMATE_RIGHT);
@@ -133,31 +109,25 @@ function buttonRightClickHandler () {
 };
 
 function buttonLeftClickHandler () {
-  if (!isRightClick) {
 
-    let rightCardGroup = null;
+  let rightCardGroup = null;
 
-    for (let group of cardContainer.children) {
-      if (Number(group.style.order) === INDEX_VISIBLE_GROUP + 1) {
-        rightCardGroup = group;
-        break;
-      }
+  for (let group of cardContainer.children) {
+    if (Number(group.style.order) === INDEX_VISIBLE_GROUP + 1) {
+      rightCardGroup = group;
+      break;
     }
-
-    while (rightCardGroup.firstElementChild) {
-      rightCardGroup.firstElementChild.remove();
-    }
-
-    const cardsToShow = getCardsToShow();
-    visibleCards = [...cardsToShow];
-
-    cardsToShow.forEach((card) => {
-      rightCardGroup.insertAdjacentElement('beforeend', card);
-    })
   }
 
-  isLeftClick = true;
-  isRightClick = !isLeftClick;
+  while (rightCardGroup.firstElementChild) {
+    rightCardGroup.firstElementChild.remove();
+  }
+
+  let cardsToShow = getRightCards();
+
+  cardsToShow.forEach((card) => {
+    rightCardGroup.insertAdjacentElement('beforeend', card);
+  })
 
   deltaOrder = -1;
   cardContainer.classList.add(CssClasses.ANIMATE_LEFT);
@@ -190,9 +160,57 @@ function disableButtons() {
   buttonLeft.setAttribute('disabled', true);
   buttonRight.setAttribute('disabled', true);
 };
+
 function enableButtons() {
   buttonLeft.removeAttribute('disabled');
   buttonRight.removeAttribute('disabled');
+};
+
+function getRandomCards () {
+  let cardsToShow = [];
+  while (cardsToShow.length < COUNT_CARD) {
+    const index = getRundomNumber(0, cards.length-1);
+    if (!currentVisibleCards.includes(cards[index]) && !cardsToShow.includes(cards[index])) {
+      cardsToShow.push(cards[index]);
+    }
+  }
+  return cardsToShow;
+};
+
+function getRightCards () {
+  let cardsToShow = null;
+
+  if (rightCards.length) {
+    cardsToShow = [...rightCards];
+    rightCards = [];
+  } else {
+    cardsToShow = getRandomCards();
+  }
+  leftCards = [...currentVisibleCards];
+  currentVisibleCards = [...cardsToShow];
+
+  return cardsToShow;
+};
+
+function getLeftCards() {
+  let cardsToShow = null;
+
+  if (leftCards.length) {
+    cardsToShow = [...leftCards];
+    leftCards = [];
+  } else {
+    cardsToShow = getRandomCards();
+  }
+  rightCards = [...currentVisibleCards];
+  currentVisibleCards = [...cardsToShow];
+
+  return cardsToShow;
+};
+
+function getRundomNumber (min, max) {
+  max = Math.floor(max);
+  min = Math.ceil(min);
+  return Math.floor(Math.random() * (max - min)) + min;
 };
 
 export { createComponent };
